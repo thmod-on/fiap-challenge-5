@@ -1,0 +1,5 @@
+*.zip
+*.txt
+!requirements.txt
+fiap5
+__pycache__

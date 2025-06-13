@@ -1,0 +1,26 @@
+import zipfile
+import json
+import pandas as pd
+
+def ler_json(caminho_zip):
+  with zipfile.ZipFile(caminho_zip, 'r') as zip_ref:
+    nome_arquivo_json = zip_ref.namelist()[0]  # assumindo que só há um arquivo no zip
+    with zip_ref.open(nome_arquivo_json) as file:
+        dados = json.load(file)
+
+  # Achatar os dados
+  linhas = []
+  for chave, conteudo in dados.items():
+      linha = {"ID": chave}
+      # Flatten (achatar) cada subnível com prefixo
+      for secao, valores in conteudo.items():
+          if isinstance(valores, dict):
+              for subchave, subvalor in valores.items():
+                  linha[f"{secao}.{subchave}"] = subvalor
+          else:
+              linha[secao] = valores
+      linhas.append(linha)
+
+  # Criar o DataFrame
+  df = pd.DataFrame(linhas)
+  return df
