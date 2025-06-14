@@ -15,7 +15,7 @@ path_prospects = 'dados\\prospects.zip'
 
 df_applicants = m.ler_json(path_applicants)
 df_vagas      = m.ler_json(path_vagas)
-df_prospects  = m.ler_json_candidaturas("/content/prospects.zip")
+df_prospects  = m.ler_json_candidaturas(path_prospects)
 
 #########################################################################################
 # TRATAMENTO DOS DADOS
@@ -27,8 +27,6 @@ df_prospects  = m.ler_json_candidaturas("/content/prospects.zip")
 df_prospects.drop(columns=['nome', 'data_candidatura',
                            'recrutador', 'ultima_atualizacao',
                            'comentario', 'recrutador'], inplace=True)
-
-print(df_prospects.head())
 
 #########################################################################################
 #   VAGAS
@@ -69,6 +67,7 @@ df_vagas['idade_maxima'] = df_vagas['idade_maxima'].fillna(60).astype(int)
 df_applicants.drop(columns=['infos_basicas.telefone_recado', 'infos_basicas.telefone',
                             'infos_basicas.inserido_por', 'infos_basicas.email',
                             'infos_basicas.sabendo_de_nos_por', 'infos_basicas.nome',
+                            'infos_basicas.data_criacao', 'infos_basicas.data_atualizacao',
                             'informacoes_pessoais.nome', 'informacoes_pessoais.cpf',
                             'informacoes_pessoais.fonte_indicacao', 'informacoes_pessoais.email',
                             'informacoes_pessoais.email_secundario', 'informacoes_pessoais.data_nascimento',
@@ -80,3 +79,7 @@ df_applicants.drop(columns=['infos_basicas.telefone_recado', 'infos_basicas.tele
                             'formacao_e_idiomas.instituicao_ensino_superior', 'informacoes_pessoais.download_cv',
                             'cargo_atual.nome_superior_imediato','cargo_atual.email_superior_imediato',
                             'cv_pt', 'cv_en', 'formacao_e_idiomas.outro_curso'], inplace=True)
+
+m.exibir_head_df('CANDIDATOS', df_applicants)
+m.exibir_head_df('VAGAS', df_vagas)
+m.exibir_head_df('CANDIDATURA', df_prospects)

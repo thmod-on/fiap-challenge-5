@@ -80,3 +80,16 @@ def ler_json_candidaturas(caminho_zip):
     # Criar o DataFrame final
     df_candidaturas = pd.DataFrame(linhas_candidatura)
     return df_candidaturas
+
+def exibir_head_df(nome_tabela, df):
+    """Metodo para acompanhamento de dataframes
+
+    Args:
+        nome_tabela (string): nome a ser exibido no 'cabecalho'
+        df (dataframe): dataframe a ser exibido
+    """
+    tabela = nome_tabela
+    print('\n','-'*(len(tabela)+6))
+    print('| ', tabela, ' |')
+    print('-'*(len(tabela)+6))
+    print(df.head(2))
