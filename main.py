@@ -43,11 +43,6 @@ df_vagas = m.remover_colunas(df_vagas,
                            'informacoes_basicas\.|perfil_vaga\.|beneficios\.')
 
 # Preenchendo nan com o "padrao" das ja utilizado em outras linhas e padronizando demais casos
-df_vagas['perfil_vaga.equipamentos_necessarios'] = df_vagas['perfil_vaga.equipamentos_necessarios'].fillna('Nenhum -')
-df_vagas['perfil_vaga.equipamentos_necessarios'] = df_vagas['perfil_vaga.equipamentos_necessarios'].str \
-  .replace('Outro - Nenhum -', 'Nenhum -') \
-  .replace('Outro -', 'Nenhum -') \
-  .replace('', 'Nenhum -')
 df_vagas['perfil_vaga.vaga_especifica_para_pcd'] = df_vagas['perfil_vaga.vaga_especifica_para_pcd'].replace('', 'Não')
 df_vagas['perfil_vaga.nivel_espanhol'] = df_vagas['perfil_vaga.nivel_espanhol'].replace('', 'Nenhum')
 df_vagas['perfil_vaga.outro_idioma'] = df_vagas['perfil_vaga.outro_idioma'].replace('', 'Nenhum').str.replace(' - ',' ')  
@@ -93,3 +88,5 @@ df_applicants['informacoes_profissionais.titulo_profissional'] = df_applicants['
 df_merge = pd. \
   merge(df_prospects, df_vagas, left_on='codigo_vaga', right_on='ID', how='inner'). \
   merge(df_applicants, left_on='codigo_candidato', right_on='ID', how='inner')
+  
+print(df_merge.head(10))
