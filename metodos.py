@@ -81,6 +81,22 @@ def ler_json_candidaturas(caminho_zip):
     df_candidaturas = pd.DataFrame(linhas_candidatura)
     return df_candidaturas
 
+def remover_colunas(df, lst_colunas_manter, str_colunas_apagar):
+    """Metodo para remover dinamicamente um conjunto de colunas de um df seguindo um padrao e deixando outras deste mesmo padrao
+
+    Args:
+        df (dataframe): dataframe que terá as colunas removidas
+        lst_colunas_manter ([string]): lista de strings contendo as colunas que devem ser mantidas
+        str_colunas_apagar (string): expressao regular contendo as colunas a serem apagadas
+
+    Returns:
+        dataframe: dataframe inicial apos a remocao das colunas solicitadas
+    """
+    col_apagar = df.columns[df.columns.str.contains(str_colunas_apagar)]
+    col_apagar_final = [coluna for coluna in col_apagar if coluna not in lst_colunas_manter]
+    df = df.drop(columns=col_apagar_final)
+    return df
+
 def exibir_head_df(nome_tabela, df):
     """Metodo para acompanhamento de dataframes
 
@@ -92,4 +108,4 @@ def exibir_head_df(nome_tabela, df):
     print('\n','-'*(len(tabela)+6))
     print('| ', tabela, ' |')
     print('-'*(len(tabela)+6))
-    print(df.head(2))
+    print(df.head(10))
