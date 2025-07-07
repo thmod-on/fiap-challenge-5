@@ -98,11 +98,10 @@ lst_situacoes_remover = ['Inscrito', 'Desistiu', 'Entrevista Técnica',
   'Documentação Cooperado','Recusado']
 
 # Removendo as linhas com dados irrelevantes na coluna target
-# Removendo as linhas com dados irrelevantes na coluna target
 df_merge = df_merge[~df_merge['situacao_candidato'].isin(lst_situacoes_remover)].copy()
 df_merge.loc[:, 'aprovado'] = df_merge['situacao_candidato'].isin(lst_situacoes_aprovado).astype(int)
 
-#print(df_merge[['situacao_candidato','aprovado']].head(10))
+
 
 #########################################################################################
 #   MATRIZ DE CALOR
@@ -111,7 +110,7 @@ df_merge.loc[:, 'aprovado'] = df_merge['situacao_candidato'].isin(lst_situacoes_
 
 # Lista das colunas categóricas a serem transformadas
 colunas_categoricas = [
-    'situacao_candidato',
+    #'situacao_candidato',
     #'informacoes_basicas.titulo_vaga',
     'perfil_vaga.vaga_especifica_para_pcd',
     'perfil_vaga.nivel profissional',
@@ -120,7 +119,7 @@ colunas_categoricas = [
     'perfil_vaga.nivel_espanhol',
     'perfil_vaga.outro_idioma',
     'informacoes_pessoais.pcd',
-    'informacoes_profissionais.titulo_profissional',
+    #'informacoes_profissionais.titulo_profissional',
     'formacao_e_idiomas.nivel_academico',
     'formacao_e_idiomas.nivel_ingles',
     'formacao_e_idiomas.nivel_espanhol',
@@ -128,9 +127,6 @@ colunas_categoricas = [
 ]
 
 df_merge_ordinal = df_merge.copy()
-
-# Preencher valores nulos com uma string padrão (necessário para evitar erro no encoder)
-df_merge_ordinal[colunas_categoricas] = df_merge_ordinal[colunas_categoricas].fillna("Nenhum")
 
 # Aplicar o OrdinalEncoder nas colunas desejadas
 encoder = OrdinalEncoder()
@@ -152,7 +148,21 @@ colunas_correlacionadas = mascara.any()[mascara.any()].index
 sub_corr = corr.loc[colunas_correlacionadas, colunas_correlacionadas]
 
 # Plot
-plt.figure(figsize=(12, 6))
-sns.heatmap(sub_corr, annot=True, cmap="coolwarm", linewidths=0.5, fmt=".2f")
-plt.title(f'Heatmap de Correlações (>|{limiar}|)')
-plt.show()
+# plt.figure(figsize=(12, 6))
+# sns.heatmap(sub_corr, annot=True, cmap="coolwarm", linewidths=0.5, fmt=".2f")
+# plt.title(f'Heatmap de Correlações (>|{limiar}|)')
+# plt.xticks(rotation=45)
+# plt.show()
+
+
+# colunas escolhidas segundo a matriz de calor do passo anterior
+colunas_aprendizado = ['perfil_vaga.nivel_espanhol', 'perfil_vaga.nivel profissional', 
+                       'formacao_e_idiomas.nivel_ingles', 'formacao_e_idiomas.nivel_espanhol',
+                       'formacao_e_idiomas.nivel_academico']
+
+#########################################################################################
+#   TREINANDO O MODELO - RANDOMFOREST
+#########################################################################################
+
+m.treinar_random_forest(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap')
+m.treinar_random_forest(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise')

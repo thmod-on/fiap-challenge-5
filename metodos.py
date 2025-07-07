@@ -1,6 +1,9 @@
 import zipfile
 import json
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, accuracy_score
 
 def ler_json(caminho_zip):
     """Metodo criado para ler um arquivo .json que esteja dentro de um .zip
@@ -109,3 +112,28 @@ def exibir_head_df(nome_tabela, df):
     print('| ', tabela, ' |')
     print('-'*(len(tabela)+6))
     print(df.head(10))
+    
+def treinar_random_forest(df, lst_colunas, col_target, descricao):
+    X = df[lst_colunas]
+    y = df[col_target]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    modelo_rf = RandomForestClassifier(n_estimators=100, random_state=42)
+    modelo_rf.fit(X_train, y_train)
+
+    y_pred = modelo_rf.predict(X_test)
+
+    print('\n\nRandomForest usando ',descricao)
+    print('Acurácia:', accuracy_score(y_test, y_pred))
+    print('\nRelatório de Classificação:\n', classification_report(y_test, y_pred))
+    
+    # import pandas as pd
+    # import matplotlib.pyplot as plt
+
+    # importancias = pd.Series(modelo_rf.feature_importances_, index=lst_colunas)
+    # importancias.sort_values().plot(kind='barh')
+    # plt.title('Importância das Variáveis')
+    # plt.show()
