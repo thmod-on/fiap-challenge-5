@@ -4,6 +4,10 @@
 
 import metodos as m
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import OrdinalEncoder
+
 
 #########################################################################################
 # CARGA DOS DADOS
@@ -52,9 +56,7 @@ df_vagas['perfil_vaga.outro_idioma'] = df_vagas['perfil_vaga.outro_idioma'].repl
 #########################################################################################
 
 # Removendo colunas que consideramos nao influenciar na analise
-col_applicants_manter = ['informacoes_pessoais.pcd', 'informacoes_profissionais.titulo_profissional',
-                         'informacoes_profissionais.area_atuacao', 'informacoes_profissionais.nivel_profissional',
-                         'informacoes_profissionais.remuneracao']
+col_applicants_manter = ['informacoes_pessoais.pcd', 'informacoes_profissionais.titulo_profissional']
 df_applicants = m.remover_colunas(df_applicants,
                                 col_applicants_manter,
                                 'infos_basicas\.|informacoes_pessoais\.|informacoes_profissionais\.|cargo_atual\.|formacao_e_idiomas.instituicao_ensino_superior|formacao_e_idiomas.cursos')
@@ -77,7 +79,7 @@ df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_
 df_applicants['informacoes_profissionais.titulo_profissional'] = df_applicants['informacoes_profissionais.titulo_profissional'].replace('', 'Nenhum')
 
 #########################################################################################
-#   TREINANDO O MODELO
+#   UNIFICANDO O MODELO
 #########################################################################################
 
 # Unindo os cadidatos as vagas atraves de suas candidaturas
@@ -96,7 +98,61 @@ lst_situacoes_remover = ['Inscrito', 'Desistiu', 'Entrevista Técnica',
   'Documentação Cooperado','Recusado']
 
 # Removendo as linhas com dados irrelevantes na coluna target
-df_merge = df_merge[~df_merge['situacao_candidato'].isin(lst_situacoes_remover)]
-df_merge['aprovado'] = df_merge['situacao_candidato'].isin(lst_situacoes_aprovado).astype(int)
+# Removendo as linhas com dados irrelevantes na coluna target
+df_merge = df_merge[~df_merge['situacao_candidato'].isin(lst_situacoes_remover)].copy()
+df_merge.loc[:, 'aprovado'] = df_merge['situacao_candidato'].isin(lst_situacoes_aprovado).astype(int)
 
-print(df_merge[['situacao_candidato','aprovado']].head(10))
+#print(df_merge[['situacao_candidato','aprovado']].head(10))
+
+#########################################################################################
+#   MATRIZ DE CALOR
+#########################################################################################
+
+
+# Lista das colunas categóricas a serem transformadas
+colunas_categoricas = [
+    'situacao_candidato',
+    #'informacoes_basicas.titulo_vaga',
+    'perfil_vaga.vaga_especifica_para_pcd',
+    'perfil_vaga.nivel profissional',
+    'perfil_vaga.nivel_academico',
+    'perfil_vaga.nivel_ingles',
+    'perfil_vaga.nivel_espanhol',
+    'perfil_vaga.outro_idioma',
+    'informacoes_pessoais.pcd',
+    'informacoes_profissionais.titulo_profissional',
+    'formacao_e_idiomas.nivel_academico',
+    'formacao_e_idiomas.nivel_ingles',
+    'formacao_e_idiomas.nivel_espanhol',
+    'formacao_e_idiomas.outro_idioma'
+]
+
+df_merge_ordinal = df_merge.copy()
+
+# Preencher valores nulos com uma string padrão (necessário para evitar erro no encoder)
+df_merge_ordinal[colunas_categoricas] = df_merge_ordinal[colunas_categoricas].fillna("Nenhum")
+
+# Aplicar o OrdinalEncoder nas colunas desejadas
+encoder = OrdinalEncoder()
+df_merge_ordinal[colunas_categoricas] = encoder.fit_transform(df_merge_ordinal[colunas_categoricas])
+
+# Calcula a matriz de correlação (numeric_only ignora objetos)
+corr = df_merge_ordinal.corr(numeric_only=True)
+
+# Limiar mínimo de correlação. Iremos analisar apenas aqueles que estiverem acima deste limiar
+limiar = 0.5
+
+# Cria uma máscara booleana onde as correlações absolutas são maiores que o limiar (sem a diagonal)
+mascara = (corr.abs() > limiar) & (corr.abs() < 1.0)
+
+# Seleciona as colunas que têm pelo menos uma correlação forte
+colunas_correlacionadas = mascara.any()[mascara.any()].index
+
+# Submatriz com apenas colunas correlacionadas
+sub_corr = corr.loc[colunas_correlacionadas, colunas_correlacionadas]
+
+# Plot
+plt.figure(figsize=(12, 6))
+sns.heatmap(sub_corr, annot=True, cmap="coolwarm", linewidths=0.5, fmt=".2f")
+plt.title(f'Heatmap de Correlações (>|{limiar}|)')
+plt.show()
