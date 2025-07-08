@@ -164,5 +164,32 @@ colunas_aprendizado = ['perfil_vaga.nivel_espanhol', 'perfil_vaga.nivel profissi
 #   TREINANDO O MODELO - RANDOMFOREST
 #########################################################################################
 
-m.treinar_random_forest(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap')
-m.treinar_random_forest(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise')
+df_resultados = pd.DataFrame(columns=['modelo', 'acuracia', 'f1_score'])
+
+df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+
+#########################################################################################
+#   TREINANDO O MODELO - XGBOOST
+#########################################################################################
+
+df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+
+#########################################################################################
+#   TREINANDO O MODELO - LOGISTIC REGRESSION
+#########################################################################################
+
+df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+
+#########################################################################################
+#   TREINANDO O MODELO - KNN
+#########################################################################################
+
+df_resultados = m.treinar_knn(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+df_resultados = m.treinar_knn(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+
+
+
+print('\n\ncompilado:\n', df_resultados.sort_values(by='acuracia', ascending=False))

@@ -7,4 +7,5 @@ prophet==1.1.6
 pmdarima==2.0.4
 statsforecast==1.5.0
 streamlit==1.45.1
+xgboost==3.0.2
 lxml==5.4.0

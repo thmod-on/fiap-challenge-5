@@ -3,7 +3,10 @@ import json
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
+from xgboost import XGBClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 
 def ler_json(caminho_zip):
     """Metodo criado para ler um arquivo .json que esteja dentro de um .zip
@@ -112,28 +115,125 @@ def exibir_head_df(nome_tabela, df):
     print('| ', tabela, ' |')
     print('-'*(len(tabela)+6))
     print(df.head(10))
-    
-def treinar_random_forest(df, lst_colunas, col_target, descricao):
+ 
+def separar_treino_teste(df, lst_colunas, col_target): 
+    """Metodo para separar os dados a serem usados para treino e teste
+
+    Args:
+        df (dataFrame): dataFrame com dados a serem estudados
+        lst_colunas (list): lista de colunas existentes no df que seram utilizadas no treino
+        col_target (string): nome da coluna existente no df que sera nosso target
+
+    Returns:
+        _type_: dados de treino e teste para os modelos
+    """
     X = df[lst_colunas]
     y = df[col_target]
-
-    X_train, X_test, y_train, y_test = train_test_split(
+    
+    return train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
+    
+def treinar_random_forest(df, lst_colunas, col_target, descricao, df_resultados):
+    """Metodo para realizar o treinamento randomForest
+
+    Args:
+        df (dataFrame): dataFrame com dados a serem estudados
+        lst_colunas (list): lista de colunas existentes no df que seram utilizadas no treino
+        col_target (string): nome da coluna existente no df que sera nosso target
+        descricao (string): informacao a ser utilizada para distinguir mais de uma chamada ao memo modelo
+        df_resultados (dataFrame): dataframe utilizado para guardar os resultados dos treinamentos
+
+    Returns:
+        dataFrame: Ao final sera retornado o dataFrame com os dados dos treinamentos de cada modelo
+    """
+    X_train, X_test, y_train, y_test = separar_treino_teste(df, lst_colunas, col_target)
 
     modelo_rf = RandomForestClassifier(n_estimators=100, random_state=42)
     modelo_rf.fit(X_train, y_train)
-
     y_pred = modelo_rf.predict(X_test)
-
-    print('\n\nRandomForest usando ',descricao)
-    print('Acurácia:', accuracy_score(y_test, y_pred))
-    print('\nRelatório de Classificação:\n', classification_report(y_test, y_pred))
     
-    # import pandas as pd
-    # import matplotlib.pyplot as plt
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='binary')
+    modelo = 'RandomForest ' + descricao
+    
+    return atualizar_resultados(df_resultados, modelo, acc, f1)
 
-    # importancias = pd.Series(modelo_rf.feature_importances_, index=lst_colunas)
-    # importancias.sort_values().plot(kind='barh')
-    # plt.title('Importância das Variáveis')
-    # plt.show()
+def treinar_xgboost(df, lst_colunas, col_target, descricao, df_resultados):
+    """Metodo para realizar o treinamento XGBOOST
+
+    Args:
+        df (dataFrame): dataFrame com dados a serem estudados
+        lst_colunas (list): lista de colunas existentes no df que seram utilizadas no treino
+        col_target (string): nome da coluna existente no df que sera nosso target
+        descricao (string): informacao a ser utilizada para distinguir mais de uma chamada ao memo modelo
+        df_resultados (dataFrame): dataframe utilizado para guardar os resultados dos treinamentos
+
+    Returns:
+        dataFrame: Ao final sera retornado o dataFrame com os dados dos treinamentos de cada modelo
+    """
+    X_train, X_test, y_train, y_test = separar_treino_teste(df, lst_colunas, col_target)
+    
+    modelo_xgb = XGBClassifier(random_state=42)
+    modelo_xgb.fit(X_train, y_train)
+    y_pred = modelo_xgb.predict(X_test)
+    
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='binary')
+    modelo = 'XGBOOST ' + descricao
+    
+    return atualizar_resultados(df_resultados, modelo, acc, f1)
+    
+def treinar_log_regression(df, lst_colunas, col_target, descricao, df_resultados):
+    """Metodo para realizar o treinamento Logistic Regression
+
+    Args:
+        df (dataFrame): dataFrame com dados a serem estudados
+        lst_colunas (list): lista de colunas existentes no df que seram utilizadas no treino
+        col_target (string): nome da coluna existente no df que sera nosso target
+        descricao (string): informacao a ser utilizada para distinguir mais de uma chamada ao memo modelo
+        df_resultados (dataFrame): dataframe utilizado para guardar os resultados dos treinamentos
+
+    Returns:
+        dataFrame: Ao final sera retornado o dataFrame com os dados dos treinamentos de cada modelo
+    """
+    X_train, X_test, y_train, y_test = separar_treino_teste(df, lst_colunas, col_target)
+    
+    modelo_log = LogisticRegression(max_iter=1000)
+    modelo_log.fit(X_train, y_train)
+    y_pred = modelo_log.predict(X_test)
+
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='binary')
+    modelo = 'LogisticRegression ' + descricao
+    
+    return atualizar_resultados(df_resultados, modelo, acc, f1)
+
+def treinar_knn(df, lst_colunas, col_target, descricao, df_resultados):
+    """Metodo para realizar o treinamento KNN
+
+    Args:
+        df (dataFrame): dataFrame com dados a serem estudados
+        lst_colunas (list): lista de colunas existentes no df que seram utilizadas no treino
+        col_target (string): nome da coluna existente no df que sera nosso target
+        descricao (string): informacao a ser utilizada para distinguir mais de uma chamada ao memo modelo
+        df_resultados (dataFrame): dataframe utilizado para guardar os resultados dos treinamentos
+
+    Returns:
+        dataFrame: Ao final sera retornado o dataFrame com os dados dos treinamentos de cada modelo
+    """
+    X_train, X_test, y_train, y_test = separar_treino_teste(df, lst_colunas, col_target)
+    
+    modelo_knn = KNeighborsClassifier(n_neighbors=5)
+    modelo_knn.fit(X_train, y_train)
+    y_pred = modelo_knn.predict(X_test)
+    
+    acc = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='binary')
+    modelo = 'KNN ' + descricao
+    
+    return atualizar_resultados(df_resultados, modelo, acc, f1)
+
+def atualizar_resultados(df, modelo, acuracia, f1):
+    df.loc[len(df)] = [modelo, acuracia, f1]
+    return df
