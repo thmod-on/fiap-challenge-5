@@ -21,6 +21,10 @@ df_applicants = m.ler_json(path_applicants)
 df_vagas      = m.ler_json(path_vagas)
 df_prospects  = m.ler_json_candidaturas(path_prospects)
 
+df_applicants_ori = df_applicants.copy()
+df_vagas_ori      = df_vagas.copy()
+df_prospects_ori  = df_prospects.copy()
+
 #########################################################################################
 # TRATAMENTO DOS DADOS
 #########################################################################################
@@ -50,6 +54,22 @@ df_vagas = m.remover_colunas(df_vagas,
 df_vagas['perfil_vaga.vaga_especifica_para_pcd'] = df_vagas['perfil_vaga.vaga_especifica_para_pcd'].replace('', 'Não')
 df_vagas['perfil_vaga.nivel_espanhol'] = df_vagas['perfil_vaga.nivel_espanhol'].replace('', 'Nenhum')
 df_vagas['perfil_vaga.outro_idioma'] = df_vagas['perfil_vaga.outro_idioma'].replace('', 'Nenhum').str.replace(' - ',' ') 
+df_vagas['perfil_vaga.nivel_academico'] = df_vagas['perfil_vaga.nivel_academico'].replace(['Ensino Médio Completo',
+                                                                                                                   'Ensino Técnico Completo',
+                                                                                                                   'Ensino Superior Cursando',
+                                                                                                                   'Ensino Superior Incompleto',
+                                                                                                                   'Ensino Técnico Incompleto',
+                                                                                                                   'Ensino Médio Incompleto',
+                                                                                                                   'Ensino Técnico Cursando',
+                                                                                                                   'Ensino Fundamental Completo'], 'Ensino Fundamental Médio')
+df_vagas['perfil_vaga.nivel_academico'] = df_vagas['perfil_vaga.nivel_academico'].replace(['Ensino Superior Completo',
+                                                                                                                   'Pós Graduação Cursando',
+                                                                                                                   'Pós Graduação Incompleto',
+                                                                                                                   'Mestrado Cursando',
+                                                                                                                   'Doutorado Cursando'], 'Ensino Superior')
+df_vagas['perfil_vaga.nivel_academico'] = df_vagas['perfil_vaga.nivel_academico'].replace(['Pós Graduação Completo'], 'Pós Graduação')
+df_vagas['perfil_vaga.nivel_academico'] = df_vagas['perfil_vaga.nivel_academico'].replace(['Mestrado Completo'], 'Mestrado Doutorado')
+
   
 #########################################################################################
 #   APPLICANTS
@@ -75,7 +95,29 @@ df_applicants['formacao_e_idiomas.outro_idioma'] = df_applicants['formacao_e_idi
   str.replace(' -', '')
 df_applicants['formacao_e_idiomas.nivel_ingles'] = df_applicants['formacao_e_idiomas.nivel_ingles'].replace('', 'Nenhum')
 df_applicants['formacao_e_idiomas.nivel_espanhol'] = df_applicants['formacao_e_idiomas.nivel_espanhol'].replace('', 'Nenhum')
-df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace('', 'Não informado')
+#df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace('', 'Não informado')
+df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace(['',
+                                                                                                                   'Ensino Superior Cursando',
+                                                                                                                   'Ensino Superior Incompleto',
+                                                                                                                   'Ensino Técnico Completo',
+                                                                                                                   'Ensino Médio Completo',
+                                                                                                                   'Ensino Fundamental Completo',
+                                                                                                                   'Ensino Técnico Cursando',
+                                                                                                                   'Ensino Técnico Incompleto',
+                                                                                                                   'Ensino Fundamental Incompleto',
+                                                                                                                   'Ensino Médio Incompleto',
+                                                                                                                   'Ensino Fundamental Cursando',
+                                                                                                                   'Ensino Médio Cursando'], 'Ensino Fundamental Médio')
+df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace(['Ensino Superior Completo',
+                                                                                                                   'Pós Graduação Cursando',
+                                                                                                                   'Pós Graduação Incompleto',
+                                                                                                                   'Mestrado Incompleto',
+                                                                                                                   'Mestrado Cursando',
+                                                                                                                   'Doutorado Incompleto',
+                                                                                                                   'Doutorado Cursando'], 'Ensino Superior')
+df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace(['Pós Graduação Completo'], 'Pós Graduação')
+df_applicants['formacao_e_idiomas.nivel_academico'] = df_applicants['formacao_e_idiomas.nivel_academico'].replace(['Mestrado Completo',
+                                                                                                                   'Doutorado Completo'], 'Mestrado Doutorado')
 df_applicants['informacoes_profissionais.titulo_profissional'] = df_applicants['informacoes_profissionais.titulo_profissional'].replace('', 'Nenhum')
 
 #########################################################################################
@@ -110,15 +152,13 @@ df_merge.loc[:, 'aprovado'] = df_merge['situacao_candidato'].isin(lst_situacoes_
 
 # Lista das colunas categóricas a serem transformadas
 colunas_categoricas = [
-    #'situacao_candidato',
-    #'informacoes_basicas.titulo_vaga',
-    'perfil_vaga.vaga_especifica_para_pcd',
+    #'perfil_vaga.vaga_especifica_para_pcd',
     'perfil_vaga.nivel profissional',
     'perfil_vaga.nivel_academico',
     'perfil_vaga.nivel_ingles',
     'perfil_vaga.nivel_espanhol',
     'perfil_vaga.outro_idioma',
-    'informacoes_pessoais.pcd',
+    #'informacoes_pessoais.pcd',
     #'informacoes_profissionais.titulo_profissional',
     'formacao_e_idiomas.nivel_academico',
     'formacao_e_idiomas.nivel_ingles',
@@ -156,8 +196,10 @@ sub_corr = corr.loc[colunas_correlacionadas, colunas_correlacionadas]
 
 
 # colunas escolhidas segundo a matriz de calor do passo anterior
-colunas_aprendizado = ['perfil_vaga.nivel_espanhol', 'perfil_vaga.nivel profissional', 
-                       'formacao_e_idiomas.nivel_ingles', 'formacao_e_idiomas.nivel_espanhol',
+colunas_aprendizado = ['perfil_vaga.nivel_espanhol',
+                       'perfil_vaga.nivel profissional', 
+                       'formacao_e_idiomas.nivel_ingles',
+                       'formacao_e_idiomas.nivel_espanhol',
                        'formacao_e_idiomas.nivel_academico']
 
 #########################################################################################
@@ -166,30 +208,43 @@ colunas_aprendizado = ['perfil_vaga.nivel_espanhol', 'perfil_vaga.nivel profissi
 
 df_resultados = pd.DataFrame(columns=['modelo', 'acuracia', 'f1_score'])
 
-df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
-df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+# df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+# df_resultados = m.treinar_random_forest(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
 
 #########################################################################################
 #   TREINANDO O MODELO - XGBOOST
 #########################################################################################
 
-df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
-df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+# df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+# df_resultados = m.treinar_xgboost(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
 
 #########################################################################################
 #   TREINANDO O MODELO - LOGISTIC REGRESSION
 #########################################################################################
 
-df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
-df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+# df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+# df_resultados = m.treinar_log_regression(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
 
 #########################################################################################
 #   TREINANDO O MODELO - KNN
 #########################################################################################
 
-df_resultados = m.treinar_knn(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
-df_resultados = m.treinar_knn(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+# df_resultados = m.treinar_knn(df_merge_ordinal, colunas_aprendizado, 'aprovado', 'colunas que selecionamos pelo heatmap', df_resultados)
+# df_resultados = m.treinar_knn(df_merge_ordinal, colunas_categoricas, 'aprovado', 'colunas que selecionamos por análise', df_resultados)
+
+# print('\n\ncompilado:\n', df_resultados.sort_values(by='acuracia', ascending=False))
 
 
+#####################################################################################################################
+print('\n\nAPPLICANT\n',df_applicants_ori.isna().sum())
+print('\n\nVAGA\n',df_vagas_ori.isna().sum())
+print('\n\nPROSPECT\n',df_prospects_ori.isna().sum())
 
-print('\n\ncompilado:\n', df_resultados.sort_values(by='acuracia', ascending=False))
+print('\n\nAPPLICANT\n',df_applicants.columns)
+print('\n\nVAGA\n',df_vagas.columns)
+print('\n\nPROSPECT\n',df_prospects.columns)
+
+#print('\n\n--------->',df_merge_ordinal[df_merge_ordinal['perfil_vaga.areas_atuacao'].str.contains('SAP')]['perfil_vaga.areas_atuacao'].value_counts())
+print('\n\n--------->',df_vagas_ori['perfil_vaga.nivel_espanhol'].value_counts())
+print('\n\n--------->',df_merge['perfil_vaga.nivel_espanhol'].value_counts())
+print('\n\n--------->',df_merge['formacao_e_idiomas.nivel_espanhol'].value_counts())
