@@ -1,6 +1,8 @@
 *.zip
 *.txt
 *.json
+*.csv
 !requirements.txt
 fiap5
 __pycache__
+old
